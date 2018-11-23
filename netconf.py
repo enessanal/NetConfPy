@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/bin/python3.6
 import paramiko
 import argparse
 import time
@@ -99,12 +99,13 @@ def test_connection(host,port,username,password,timeout):
 		ssh.close()
 
 def activate_shell(host,port,username,password,timeout):
+	
 	ssh = paramiko.SSHClient()
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 	try:
+		print(paint("[*] ","OKBLUE") + "Preparing for execution... ")
 		ssh.connect(hostname=host,port=port,username=username,password=password,timeout=timeout)
 		print(paint("[+] ","OKGREEN") +"Established connection => " +host+":"+str(port))
-
 		########################################################################################
 		rm=ssh.invoke_shell()
 		rm.send("uname -a\n")
@@ -143,7 +144,7 @@ def main():
 	global args
 	args = get_args()
 
-	timeout = 3
+	timeout = 5
 	host = args.host
 	port = args.port
 	username = args.username
