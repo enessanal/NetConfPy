@@ -1,39 +1,35 @@
 #!/bin/python3.6
-import paramiko
-import argparse
-import time
-import socket
-import os
-import platform
-
-class bcolors:
-  HEADER = '\033[95m'
-  OKBLUE = '\033[94m'
-  OKGREEN = '\033[92m'
-  WARNING = '\033[93m'
-  FAIL = '\033[91m'
-  ENDC = '\033[0m'
-  BOLD = '\033[1m'
-  UNDERLINE = '\033[4m'
+import paramiko, argparse,time,socket,os,platform
 
 def paint(text,color):
+	GREEN = '\033[92m'
+	BLUE = '\033[94m'
+	RED = '\033[91m'
+	YELLOW = '\033[1;33m'
+	BOLD = '\033[1m'
+	UNDERLINE = '\033[4m'
+	RESET = '\033[0m'
+
 	if OS_is_Linux is False: 
 		return text
 
-	if color is "OKGREEN" : 
-		return bcolors.OKGREEN + text + bcolors.ENDC
+	if color is "GREEN" : 
+		return GREEN + text + RESET
 
-	elif color is "OKBLUE" : 
-		return bcolors.OKBLUE + text + bcolors.ENDC
+	elif color is "BLUE" : 
+		return BLUE + text + RESET
 
-	elif color is "FAIL" : 
-		return bcolors.FAIL + text + bcolors.ENDC
-		
+	elif color is "RED" : 
+		return RED + text + RESET
+
+	elif color is "YELLOW" : 
+		return YELLOW + text + RESET
+
+	elif color is "BOLD" : 
+		return BOLD + text + RESET
+
 	elif color is "UNDERLINE" : 
-		return bcolors.UNDERLINE + text + bcolors.ENDC
-		
-	elif color is "WARNING" : 
-		return bcolors.WARNING + text + bcolors.ENDC
+		return UNDERLINE + text + RESET
 
 	else: 
 		return text
@@ -54,44 +50,42 @@ def get_banner(host,port,timeout):
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 	try:
-		print(paint("[*] ","OKBLUE") + "Testing connection... ")
+		print(paint("[*] ","BLUE") + "Testing connection... ")
 		ssh.connect(hostname=host,port=port,username="invalid_username_for_only_get_the_banner",password="invalid_password_for_only_get_the_banner",timeout=timeout)
 	
 	except socket.timeout as exception:
-		print(paint("[-] ","FAIL") + "Failed to get banner. ("+str(exception)+")")
+		print(paint("[-] ","RED") + "Failed to get banner. ("+str(exception)+")")
 	
 	except Exception as exception:
-		print(paint("[*] ","OKBLUE") + "Getting banner... ")
+		print(paint("[*] ","BLUE") + "Getting banner... ")
 		banner=""
 
 		if(ssh.get_transport()): 
 			banner=ssh.get_transport().remote_version
-			print(paint("[+] ","OKGREEN") + "Banner => "+banner)
+			print(paint("[+] ","GREEN") + "Banner => "+banner)
 
 		else:
-			print(paint("[-] ","FAIL") + "Failed to get banner. ("+str(exception)+")")
+			print(paint("[-] ","RED") + "Failed to get banner. ("+str(exception)+")")
 
 		ssh.close()
 		
-
-
 def test_connection(host,port,username,password,timeout):
 	ssh = paramiko.SSHClient()
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 	try:
 		ssh.connect(hostname=host,port=port,username=username,password=password,timeout=timeout)
-		print(paint("[+] ","OKGREEN") + "Test connection succeed (Credentials are valid) => " +host+":"+str(port))
+		print(paint("[+] ","GREEN") + "Test connection succeed (Credentials are valid) => " +host+":"+str(port))
 
 		ssh.close()
 		return True
 
 	except paramiko.AuthenticationException as exception:
-		print(paint("[-] ","FAIL") + "Authentication Failed => " +host+":"+str(port))
+		print(paint("[-] ","RED") + "Authentication failed => " +host+":"+str(port))
 		
 		return False
 
 	except Exception as exception:
-		print(paint("[-] ","FAIL") + "Failed to connect => " +host+":"+str(port)+" ("+str(exception)+")")
+		print(paint("[-] ","RED") + "Failed to connect => " +host+":"+str(port)+" ("+str(exception)+")")
 
 		return False
 
@@ -103,19 +97,12 @@ def activate_shell(host,port,username,password,timeout):
 	ssh = paramiko.SSHClient()
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 	try:
-		print(paint("[*] ","OKBLUE") + "Preparing for execution... ")
+		print(paint("[*] ","BLUE") + "Preparing for execution... ")
 		ssh.connect(hostname=host,port=port,username=username,password=password,timeout=timeout)
-		print(paint("[+] ","OKGREEN") +"Established connection => " +host+":"+str(port))
+		print(paint("[+] ","GREEN") +"Established connection => " +host+":"+str(port))
 		########################################################################################
 		rm=ssh.invoke_shell()
 		rm.send("uname -a\n")
-
-
-
-
-
-
-
 
 		#########################################################################################
 
@@ -126,21 +113,21 @@ def activate_shell(host,port,username,password,timeout):
 		print()
 		print(output)
 		print()
-		print(paint("[+] ","OKGREEN") + "Command execution succeed")
+		print(paint("[+] ","GREEN") + "Command execution succeed")
 
 	except Exception as exception:
-		print(paint("[-] ","FAIL") + "Crashed => " +host+":"+str(port)+" ("+str(exception)+")")
+		print(paint("[-] ","RED") + "Crashed => " +host+":"+str(port)+" ("+str(exception)+")")
 
 	finally:
 		ssh.close()
 
 
 def main():
+
 	global OS_is_Linux
 	OS_is_Linux = True
 	if platform.system() is "Windows" : 
 		OS_is_Linux = False
-
 	global args
 	args = get_args()
 
@@ -152,12 +139,9 @@ def main():
 
 	get_banner(host,port,timeout)
 	if(test_connection(host,port,username,password,timeout) is False):
-		print(paint("[*] ","OKBLUE") + "Exiting...")
+		print(paint("[*] ","BLUE") + "Exiting...")
 	else:
 		activate_shell(host,port,username,password,timeout)
-
-
-
 
 
 
