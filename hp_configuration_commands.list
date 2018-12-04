@@ -1,0 +1,9 @@
+_cmdline-mode on\n
+Y\n
+512900\n
+dir\n
+mkdir enes0412deneme\n
+dir\n
+rmdir enes0412deneme\n
+Y\n
+dir\n
