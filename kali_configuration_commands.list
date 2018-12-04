@@ -1,0 +1,6 @@
+whoami\n
+uname -a\n
+ls -la\n
+dir\n
+pwd\n
+cat /etc/passwd\n
