@@ -1,0 +1,9 @@
+pwd\n
+show sessions\n
+\n
+\n
+dir\n
+cd system\n
+dir\n
+pwd\n
+show interfaces counter GigabitEthernet 1\n
