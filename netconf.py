@@ -1,48 +1,11 @@
-import paramiko, argparse, time, socket, os, platform
-# import logging
+import paramiko, argparse, time, socket, platform
+#import logging
 #logging.getLogger("paramiko").setLevel(logging.WARNING)
 #paramiko.util.log_to_file("paramiko_log_file", level = "DEBUG")
 command_delay=0.3
 console_wait=0.5
 output_wait=1
-
 command_list = []
-
-
-
-# ÇALIŞTIRILACAK KOMUTLAR
-############################################################
-
-# command_list.append("whoami\n")
-# command_list.append("uname -a\n")
-# command_list.append("ls -la\n")
-# command_list.append("dir\n")
-# command_list.append("pwd\n")
-# command_list.append("cat /etc/passwd\n")
-
-# command_list.append("_cmdline-mode on\n")
-# command_list.append("Y\n")
-# command_list.append("512900\n")
-# command_list.append("rmdir enes0412deneme\n")
-# command_list.append("Y\n")
-# command_list.append("dir\n")
-
-command_list.append("pwd\n")
-command_list.append("show sessions\n")
-command_list.append("\n")
-command_list.append("\n")
-command_list.append("dir\n")
-command_list.append("cd system\n")
-command_list.append("dir\n")
-command_list.append("pwd\n")
-command_list.append("show interfaces counter GigabitEthernet 1\n")
-
-
-
-
-############################################################
-
-
 
 
 def paint(text,color):
@@ -84,10 +47,10 @@ def get_args():
 	parser.add_argument("username", type = str, help = "Give a user name")
 	parser.add_argument("password", type = str, help = "Give a password")
 	parser.add_argument("-p","--port",help="Port Number (Default=22)",type=int,default=22)
+	parser.add_argument("-L","--list",help="Give an input file",type=str)
 
 	args=parser.parse_args()
 	return args;
-
 
 def get_banner(host,port,timeout):
 	ssh = paramiko.SSHClient()
@@ -222,7 +185,6 @@ def activate_shell(host,port,username,password,timeout):
 	finally:
 		ssh.close()
 
-
 def main():
 
 	global OS_is_Linux
@@ -237,13 +199,29 @@ def main():
 	port = args.port
 	username = args.username
 	password = args.password
-	
+	file_path = args.list
+
+	if file_path:
+		try:
+			lines=[]
+			with open(file_path) as f:
+				lines = f.read().splitlines()
+			for line in lines:
+				line=line.replace("\n","\\n").replace("\\n","\n")
+				command_list.append(line)
+
+		except Exception as exception:
+			print(paint("[-] ","RED") + str(exception))
+			print(paint("[?] ","YELLOW") + "Can't read commands successfully. But program flows.")
+
+	else:
+		print(paint("[?] ","YELLOW") + "You did not specify a file path, no command will be run. (only shell test)")
+
 	get_banner(host,port,timeout)
 	if(test_connection(host,port,username,password,timeout) is False):
 		print(paint("[*] ","BLUE") + "Exiting...")
 	else:
 		activate_shell(host,port,username,password,timeout)
-
 
 if __name__ == "__main__":
 	main()
