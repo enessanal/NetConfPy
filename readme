@@ -1,0 +1,23 @@
+Tanımlar:
+--------------------------------------------------------------------
++ run.sh: "./run.sh" komutu ile çalıştırılacak olan dosyadır. Çalıştırılmadan önce "sudo chmod +x run.sh" komutu ile çalıştırma izni verilmesi gerekebilir. Bu dosyanın içeriğine müdahale etmeyiniz.
++ netconf7.py: Tek bir host için konfigurasyon yapan python script'idir. Bu dosyanın içeriğine müdahale etmeyiniz.
++ cisco_configuration_commands.list: Cisco switchler üzerinde çalıştırılmak istenen komutlar bu dosyaya yazılabilir. Örnek olarak oluşturulmuştur, istenirse farklı bir isimde dosya oluşturulup komutlar o dosyaya eklenebilir ve list.txt içeriğinde düzenleme yapılabilir.
++ hp_configuration_commands.list: HP switchler üzerinde çalıştırılmak istenen komutlar bu dosyaya yazılabilir. Örnek olarak oluşturulmuştur, istenirse farklı bir isimde dosya oluşturulup komutlar o dosyaya eklenebilir ve list.txt içeriğinde düzenleme yapılabilir.d
++ list.txt: Konfigurasyon yapılacak Swtich'lerin sırasıyla IP adresleri, username, password ve konfigurayon dosyalarının isimleri bu dosyaya yazılır. Birden fazla host için, aynı formatta satır satır giriş yapılmalıdır.
+
+
+Açıklamalar:
+--------------------------------------------------------------------
+- Switch'ler üzerinde yapmak istediğiniz konfigurasyonlar için, cisco_configuration_commands.list ve hp_configuration_commands.list dosyalarına ilgili komutları ekleyiniz. Veya yeni dosyalar oluşturunuz ve bu dosya isimlerini list.txt içerisine uygun yerlere eklemeyi unutmayınız.
+- Komutların sonuna endline ("\n") ifadesi eklemeyi unutmayınız.
+- Ardından list.txt dosyasının içine şu formattaki bilgileri ekleyiniz: 
+[ip_adresi] [username] [password] [konfigurasyon_dosyasi]
+
+Örnek list.txt dosya içeriği:
+
+10.62.123.32 cisco 123Test! cisco_configuration_commands.list
+10.82.201.91 cisco mypassword001 cisco_configuration_commands.list
+10.191.0.32 hp_admin SpecialAdmin! hp_configuration_commands.list
+
+- Dosyalara uygun içerikler sağladıktan sonra kaydediniz ve "./run.sh" komutu ile toplu konfigurasyon işlemini başlatınız.
