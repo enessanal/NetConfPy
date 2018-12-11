@@ -1,4 +1,4 @@
-cat info.txt | while read line
+cat list.txt | while read line
 do
 host=$(echo "$line" | cut -d " " -f 1) 
 username=$(echo "$line" | cut -d " " -f 2)
