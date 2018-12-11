@@ -1,5 +1,0 @@
-host username password path
-host username password path
-host username password path
-host username password path
-host username password path
